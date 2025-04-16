@@ -1,70 +1,128 @@
-# 🚖 Porto Taxi Trajectories - EDA & Trip Duration Insights
+# 🚖 Porto Taxi Trajectory Data Cleaning & Analysis Project
 
-This repository contains an exploratory data analysis (EDA) notebook based on the **Porto Taxi Trajectories Dataset**, which includes a full year of GPS trajectory data from taxi trips in Porto, Portugal.
-
-## 📂 Dataset Source
-
-- 📎 **Kaggle Dataset**: [Taxi Trajectory Data](https://www.kaggle.com/datasets/crailtap/taxi-trajectory/data)
-- 📅 **Time Period**: 01/07/2013 – 30/06/2014
-- 🚕 **Taxis Covered**: 442 unique taxis
-- 📍 **Data Points**: Trip metadata + GPS trajectories
-
-## 📌 Objective
-
-The main goal of this notebook is to **analyze and clean** the data in preparation for potential predictive modeling tasks such as:
-- **Trip duration prediction**
-- **Route clustering**
-- **Anomaly detection**
-- **Geo-spatial pattern analysis**
-
-## 🧠 What’s Inside the Notebook?
-
-- ✅ **Data Loading and Overview**
-  - Load and inspect the structure of the CSV file.
-  - Understand data types, nulls, and basic statistics.
-
-- 🔍 **Detailed Dataset Description**
-  - Explanation of each column in the dataset.
-  - Contextual notes for geo-spatial and temporal features.
-
-- 📈 **Initial Analysis**
-  - Check for outliers and anomalies in the `TIMESTAMP`.
-  - Detect and handle duplicated `TRIP_ID`s.
-  - Examine missing GPS data using the `MISSING_DATA` field.
-
-- 📊 **Feature Engineering Potential**
-  - Discussion of how to compute trip duration from `POLYLINE`.
-  - Note on parsing `POLYLINE` (list of GPS points) from string to usable format.
-
-## 🛠 Key Columns Explained
-
-| Column         | Description |
-|----------------|-------------|
-| `TRIP_ID`      | Unique ID for each trip |
-| `CALL_TYPE`    | How the trip was requested (Central, Taxi Stand, Street) |
-| `ORIGIN_CALL`  | Customer ID (if applicable) |
-| `ORIGIN_STAND` | Taxi stand ID (if applicable) |
-| `TAXI_ID`      | ID of the taxi driver |
-| `TIMESTAMP`    | Start time of the trip (Unix timestamp) |
-| `DAYTYPE`      | Type of day: normal, holiday, or pre-holiday |
-| `MISSING_DATA` | Whether GPS points are missing |
-| `POLYLINE`     | List of GPS coordinates, sampled every 15 seconds |
-
-## 🧮 Trip Duration Formula
-
-> **Trip Time (seconds)** = (`len(POLYLINE)` - 1) × 15
-
-## 📌 Notes
-
-- Duplicated `TRIP_ID`s were found and flagged for cleaning.
-- `POLYLINE` is the most valuable feature for predicting travel time and understanding routes.
-
-## 🚀 Future Work
-
-- Parse and visualize GPS data
-- Cluster routes using trajectory similarity
-- Train ML models to predict trip duration or optimize routes
+This project focuses on data cleaning, preprocessing, and basic exploratory analysis of the **Porto Taxi Trajectory dataset**, which includes over **1.5 million taxi trips** recorded between **July 2013 and June 2014**.
 
 ---
 
-📬 Feel free to fork, contribute, or use this analysis as a baseline for further modeling work!
+## 📦 Dataset Overview
+
+- **Source:** [Kaggle – Porto Taxi Trajectory Dataset](https://www.kaggle.com/datasets/crailtap/taxi-trajectory)
+- **City:** Porto, Portugal 🇵🇹
+- **Period:** 01/07/2013 to 30/06/2014
+- **Taxis Covered:** 442
+- **Trips:** 1,710,671
+- **Data Points:** Includes origin, timestamp, GPS trajectory, and more
+
+Each row in the dataset represents one **completed taxi trip**, with GPS data points recorded every **15 seconds**.
+
+---
+
+## 🧠 Goals of the Project
+
+- 📌 Understand and document the structure of the dataset
+- 🧹 Clean and preprocess the data
+- 📉 Analyze trip durations, speeds, and missing values
+- 🧭 Handle GPS trajectory data (polyline)
+- 📈 Prepare the data for further modeling and analysis
+
+---
+
+## 📋 Dataset Features
+
+| Column Name     | Description |
+|-----------------|-------------|
+| `TRIP_ID`       | Unique ID for each trip |
+| `CALL_TYPE`     | How the trip was requested (`A` = central, `B` = taxi stand, `C` = random street) |
+| `ORIGIN_CALL`   | Customer ID if `CALL_TYPE` = `A` |
+| `ORIGIN_STAND`  | Stand ID if `CALL_TYPE` = `B` |
+| `TAXI_ID`       | Unique ID of the taxi driver |
+| `TIMESTAMP`     | UNIX timestamp of the trip start |
+| `DAY_TYPE`      | Type of day: `A` = normal, `B` = holiday, `C` = day before holiday |
+| `MISSING_DATA`  | Whether the GPS data is incomplete |
+| `POLYLINE`      | GPS trajectory of the trip in `[lon, lat]` format every 15 seconds |
+
+---
+
+## 🧹 Data Cleaning & Preprocessing Steps
+
+### ✅ General Cleaning
+
+- Mapped categorical values for better readability:
+  - `CALL_TYPE`: A → `Central`, B → `Stand`, C → `Street`
+  - `DAY_TYPE`: A → `Normal`, B → `Holiday`, C → `Day Before Holiday`
+- Checked for `NULL` values and ensured `ORIGIN_CALL` and `ORIGIN_STAND` are null where appropriate
+- Converted `TIMESTAMP` to human-readable datetime format
+- Parsed the `POLYLINE` column into actual lists of GPS coordinates
+### 📏 Feature Engineering
+- ✅ **Holidays were not specified**  
+  Used a library called holidays to mark the holidays in `Porto - Portugal`
+
+- ✅ **Distance Calculation**  
+  Calculated total distance traveled using the Haversine formula
+
+- ✅ **Trip Duration Calculation**  
+  Calculated trip duration in seconds and minutes from `POLYLINE`:
+  \[
+  \text{Trip Time (seconds)} = (\text{Number of GPS Points} - 1) \times 15
+  \]
+
+- ✅ **Speed Estimation**  
+    Derived average speed per trip:  
+    \[
+    \text{Speed} = \frac{\text{Distance (km)}}{\text{Time (hours)}}
+    \]
+
+- ✅ **Outlier Detection**  
+  Identified outliers in trip durations and Distance using the IQR method for efficiency.
+
+### 📉 Missing Data
+
+- ✅ Used the `MISSING_DATA` flag to identify trips with incomplete GPS logs
+- ✅ Interpolated missing GPS points for partial trajectories using linear interpolation (within a threshold of ~0.3 km per 15 seconds)
+- Considered realistic max distance a car could travel in 15 seconds (~0.3 km = 72 km/h upper bound)
+  
+  **Note**: The threshold of 0.3 km was choosen based on the average speed of the complete trips which was Calculated.
+---
+
+## 📊 Summary Stats
+
+| Metric               | Value |
+|----------------------|-------|
+| Total Trips Analyzed | ~1.55M |
+| Avg. Duration        | ~10.9 minutes |
+| Max Duration         | ~498 minutes |
+| Trips with Missing GPS | Present, interpolated in valid cases |
+
+---
+
+## 📌 Future Work Ideas
+
+- 🚀 Predict trip duration using ML models
+- 🗺️ Visualize trips on interactive maps
+- 📈 Cluster routes or passenger behaviors
+- 🧠 Analyze taxi demand vs. time of day/week
+
+---
+
+## 📁 Files in this Project
+
+- `README.md`: Project overview and documentation
+- `notebook.ipynb`: Main Jupyter Notebook containing all steps
+- `porto-taxi.csv`: The original dataset (not included here, download from Kaggle)
+- `cleaned_data.csv`: Output after cleaning and feature engineering (optional)
+
+---
+
+## 📚 References
+
+- 📊 [Kaggle Dataset: Porto Taxi Trajectory](https://www.kaggle.com/datasets/crailtap/taxi-trajectory)
+- 📖 ECML/PKDD 15: Taxi Trip Time Prediction (II) Competition
+
+---
+
+## 🙌 Acknowledgments
+
+Thanks to the original dataset authors and the ECML/PKDD 2015 challenge organizers.
+
+---
+
