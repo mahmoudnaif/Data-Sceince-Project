@@ -17,7 +17,7 @@ portugalHolidays
 df['datetime'] = pd.to_datetime(df['TIMESTAMP'], unit='s')
 
 def modifyDayType(r):
-    if r['datetime'] in portugalHolidays:portugalHolidays
+    if r['datetime'] in portugalHolidays:
         r['dayTypeMap'] = 'Holiday'
     elif (r['datetime'] + timedelta(days=1)) in portugalHolidays:
         r['dayTypeMap'] = 'Before_Holiday'
