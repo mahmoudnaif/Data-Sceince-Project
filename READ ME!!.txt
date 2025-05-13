@@ -1,0 +1,10 @@
+1- The taxi Trajectory data won't be included in the compressed folder because of its size, but if you would like to run the code you can download it from here:
+https://www.kaggle.com/datasets/crailtap/taxi-trajectory/data
+
+2- You need at least 16gb of rams to run the "Task1DataCleaning.ipynb"
+
+3- If you run "Task1DataCleaning.ipynb" it will take 20 to 50 mins to run all the cells depending on your device (Parsing the polylines takes most of the time)
+
+4- Last but not least, Have fun :)
+
+5-  Just because I like number 5 
